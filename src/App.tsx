@@ -4,6 +4,7 @@
 import { useReducer } from 'react';
 import GridView from './components/GridView.tsx';
 import Header from './components/Header.tsx';
+import ShapeEditor from './components/ShapeEditor.tsx';
 import TextArtView from './components/TextArtView.tsx';
 import { createInitialHistory, historyReducer } from './state/history.ts';
 import { solutionToTextArt } from './utils/textArt.ts';
@@ -18,12 +19,12 @@ function App() {
       <main className="mx-auto max-w-5xl space-y-6 p-6">
         <section className="rounded-lg border border-gray-200 bg-white p-5">
           <h2 className="mb-3 text-lg font-bold">Step 1: ピース形状入力</h2>
-          <div className="flex flex-wrap items-start gap-6">
-            <div className="flex h-40 w-64 items-center justify-center rounded border border-dashed border-gray-300 text-sm text-gray-400">
-              テキスト入力（Phase 4 で実装）
-            </div>
-            <GridView shape={state.shape} outside="editable" />
-          </div>
+          <ShapeEditor
+            shape={state.shape}
+            onLoadText={(text) => dispatch({ type: 'LOAD_TEXT_ART', text })}
+            onToggleCell={(pos) => dispatch({ type: 'TOGGLE_CELL', pos })}
+            onSetGridSize={(width, height) => dispatch({ type: 'SET_GRID_SIZE', width, height })}
+          />
         </section>
 
         <section className="rounded-lg border border-gray-200 bg-white p-5">
