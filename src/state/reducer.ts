@@ -11,7 +11,7 @@ import { MAX_SIZE, parseShapeText } from '../utils/textArt.ts';
 import type { CellPos, Clues, PieceShape } from '../solver/types.ts';
 import type { Action, AppState } from './types.ts';
 
-export const INITIAL_SIZE = 10;
+export const INITIAL_SIZE = 20;
 
 export function createInitialState(): AppState {
   return {
@@ -41,6 +41,44 @@ export function invalidClueKeys(shape: PieceShape, clues: Clues): Set<string> {
     if (value > neighborCount(shape, keyToPos(key))) invalid.add(key);
   }
   return invalid;
+}
+
+// 盤面の外周から到達できない空マス＝外枠で完全に囲まれた内側のマスを返す
+// （「内側を塗りつぶす」機能。docs/Spec.md 4.4）
+export function enclosedCells(shape: PieceShape): Set<string> {
+  const { width, height, cells } = shape;
+  const outside = new Set<string>();
+  const stack: CellPos[] = [];
+  const visit = (x: number, y: number) => {
+    if (x < 0 || y < 0 || x >= width || y >= height) return;
+    const key = xyKey(x, y);
+    if (cells.has(key) || outside.has(key)) return;
+    outside.add(key);
+    stack.push({ x, y });
+  };
+  for (let x = 0; x < width; x++) {
+    visit(x, 0);
+    visit(x, height - 1);
+  }
+  for (let y = 0; y < height; y++) {
+    visit(0, y);
+    visit(width - 1, y);
+  }
+  while (stack.length > 0) {
+    const { x, y } = stack.pop()!;
+    visit(x + 1, y);
+    visit(x - 1, y);
+    visit(x, y + 1);
+    visit(x, y - 1);
+  }
+  const enclosed = new Set<string>();
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const key = xyKey(x, y);
+      if (!cells.has(key) && !outside.has(key)) enclosed.add(key);
+    }
+  }
+  return enclosed;
 }
 
 // 無効セル上のヒントを取り除く。変化がなければ元の Map を返す
@@ -83,6 +121,33 @@ export function appReducer(state: AppState, action: Action): AppState {
         cells.add(key);
       }
       return withEdit(state, { shape: { ...state.shape, cells }, clues });
+    }
+
+    case 'PAINT_CELL': {
+      const { x, y } = action.pos;
+      if (x < 0 || y < 0 || x >= state.shape.width || y >= state.shape.height) return state;
+      const key = posKey(action.pos);
+      if (state.shape.cells.has(key) === action.value) return state;
+      const cells = new Set(state.shape.cells);
+      let clues = state.clues;
+      if (action.value) {
+        cells.add(key);
+      } else {
+        cells.delete(key);
+        if (clues.has(key)) {
+          clues = new Map(clues);
+          clues.delete(key); // セル無効化と同時にヒントも削除
+        }
+      }
+      return withEdit(state, { shape: { ...state.shape, cells }, clues });
+    }
+
+    case 'FILL_ENCLOSED': {
+      const enclosed = enclosedCells(state.shape);
+      if (enclosed.size === 0) return state;
+      const cells = new Set(state.shape.cells);
+      for (const key of enclosed) cells.add(key);
+      return withEdit(state, { shape: { ...state.shape, cells } });
     }
 
     case 'SET_CLUE': {

@@ -60,7 +60,8 @@ function App() {
           <ShapeEditor
             shape={state.shape}
             onLoadText={(text) => dispatch({ type: 'LOAD_TEXT_ART', text })}
-            onToggleCell={(pos) => dispatch({ type: 'TOGGLE_CELL', pos })}
+            onPaintCell={(pos, value, stroke) => dispatch({ type: 'PAINT_CELL', pos, value, stroke })}
+            onFillEnclosed={() => dispatch({ type: 'FILL_ENCLOSED' })}
             onSetGridSize={(width, height) => dispatch({ type: 'SET_GRID_SIZE', width, height })}
           />
         </section>

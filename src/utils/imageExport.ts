@@ -1,7 +1,8 @@
 // 解答グリッドのPNG出力（docs/Spec.md 8章）
 // Canvas APIのみで描画する（追加ライブラリなし）。
-// 凡例はグリッド表示（4.2）と揃える: 塗る=黒塗り、塗らない=×、ヒント=数字、
-// ピース外=グレー背景、グリッド線あり、タイトル/日時はオプション
+// 凡例はグリッド表示（4.2）と揃える: 塗る=黒塗り、塗らない=黄色塗り、
+// ヒント=数字（背景色が塗り状態を表す）、ピース外=グレー背景、
+// グリッド線・ピース輪郭線あり、タイトル/日時はオプション
 import { xyKey } from './coords.ts';
 import type { Clues, PieceShape, Solution } from '../solver/types.ts';
 
@@ -58,8 +59,8 @@ export function renderSolutionCanvas(
       const state = solution.get(key) ?? 'unknown';
       const clue = clues.get(key);
 
-      // セル背景とグリッド線
-      ctx.fillStyle = state === 'filled' ? '#111827' : '#ffffff';
+      // セル背景（2色塗り分け: 塗る=黒 / 塗らない=黄）とグリッド線
+      ctx.fillStyle = state === 'filled' ? '#111827' : state === 'empty' ? '#fef3c7' : '#ffffff';
       ctx.fillRect(px, py, CELL, CELL);
       ctx.strokeStyle = '#9ca3af';
       ctx.lineWidth = 1;
@@ -70,36 +71,46 @@ export function renderSolutionCanvas(
       const cx = px + CELL / 2;
       const cy = py + CELL / 2 + 1;
 
-      if (state === 'filled') {
-        // 塗る: 黒塗り（ヒントは白文字数字）
-        if (clue !== undefined) {
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 16px sans-serif';
-          ctx.fillText(String(clue), cx, cy);
-        }
-      } else if (state === 'empty') {
-        if (clue !== undefined) {
-          // 塗らないヒント: 数字＋右上に小さな×
-          ctx.fillStyle = '#1f2937';
-          ctx.font = 'bold 16px sans-serif';
-          ctx.fillText(String(clue), cx, cy);
-          ctx.fillStyle = '#9ca3af';
-          ctx.font = '10px sans-serif';
-          ctx.textAlign = 'right';
-          ctx.textBaseline = 'top';
-          ctx.fillText('×', px + CELL - 3, py + 2);
-        } else {
-          // 塗らない: バツ印
-          ctx.fillStyle = '#9ca3af';
-          ctx.font = '16px sans-serif';
-          ctx.fillText('×', cx, cy);
-        }
-      } else {
+      // ヒント数字: 塗る=白文字 / 塗らない=黒文字（背景色が塗り状態を表す）
+      if (clue !== undefined) {
+        ctx.fillStyle = state === 'filled' ? '#ffffff' : '#1f2937';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText(String(clue), cx, cy);
+      } else if (state === 'unknown') {
         // 未確定（通常は解答済みのみ出力するため現れない）
         ctx.fillStyle = '#9ca3af';
         ctx.font = 'bold 16px sans-serif';
-        ctx.fillText(clue !== undefined ? String(clue) : '?', cx, cy);
+        ctx.fillText('?', cx, cy);
       }
+    }
+  }
+
+  // ピースの輪郭線（画面表示と同じ indigo。docs/Spec.md 4.2）
+  ctx.strokeStyle = '#4f46e5';
+  ctx.lineWidth = 2;
+  for (let y = 0; y < shape.height; y++) {
+    for (let x = 0; x < shape.width; x++) {
+      if (!shape.cells.has(xyKey(x, y))) continue;
+      const px = MARGIN + x * CELL;
+      const py = gridTop + y * CELL;
+      ctx.beginPath();
+      if (!shape.cells.has(xyKey(x, y - 1))) {
+        ctx.moveTo(px, py + 1);
+        ctx.lineTo(px + CELL, py + 1);
+      }
+      if (!shape.cells.has(xyKey(x, y + 1))) {
+        ctx.moveTo(px, py + CELL - 1);
+        ctx.lineTo(px + CELL, py + CELL - 1);
+      }
+      if (!shape.cells.has(xyKey(x - 1, y))) {
+        ctx.moveTo(px + 1, py);
+        ctx.lineTo(px + 1, py + CELL);
+      }
+      if (!shape.cells.has(xyKey(x + 1, y))) {
+        ctx.moveTo(px + CELL - 1, py);
+        ctx.lineTo(px + CELL - 1, py + CELL);
+      }
+      ctx.stroke();
     }
   }
   return canvas;

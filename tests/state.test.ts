@@ -8,7 +8,7 @@ import {
   historyReducer,
 } from '../src/state/history.ts';
 import type { HistoryAction, HistoryState } from '../src/state/history.ts';
-import { invalidClueKeys, neighborCount } from '../src/state/reducer.ts';
+import { enclosedCells, invalidClueKeys, neighborCount } from '../src/state/reducer.ts';
 
 function run(...actions: HistoryAction[]): HistoryState {
   return actions.reduce(historyReducer, createInitialHistory());
@@ -54,10 +54,63 @@ describe('reducer: 形状編集', () => {
     expect(s.present.clues.size).toBe(0);
   });
 
-  it('SET_GRID_SIZE の不正値・同値は無視される', () => {
+  it('SET_GRID_SIZE の不正値・同値は無視され、上限80×80まで許容される', () => {
     expect(run({ type: 'SET_GRID_SIZE', width: 0, height: 5 }).past).toHaveLength(0);
-    expect(run({ type: 'SET_GRID_SIZE', width: 21, height: 5 }).past).toHaveLength(0);
-    expect(run({ type: 'SET_GRID_SIZE', width: 10, height: 10 }).past).toHaveLength(0);
+    expect(run({ type: 'SET_GRID_SIZE', width: 81, height: 5 }).past).toHaveLength(0);
+    expect(run({ type: 'SET_GRID_SIZE', width: 20, height: 20 }).past).toHaveLength(0);
+    const s = run({ type: 'SET_GRID_SIZE', width: 80, height: 80 });
+    expect(s.present.shape.width).toBe(80);
+    expect(s.present.shape.height).toBe(80);
+  });
+});
+
+describe('reducer: ドラッグ描画と塗りつぶし', () => {
+  const paint = (
+    x: number,
+    y: number,
+    value: boolean,
+    stroke: 'start' | 'continue',
+  ): HistoryAction => ({ type: 'PAINT_CELL', pos: { x, y }, value, stroke });
+
+  it('ドラッグ1回分（start + continue×n）は1つのundo単位になる', () => {
+    const s = run(paint(0, 0, true, 'start'), paint(1, 0, true, 'continue'), paint(2, 0, true, 'continue'));
+    expect(s.present.shape.cells.size).toBe(3);
+    expect(s.past).toHaveLength(1);
+    const undone = historyReducer(s, { type: 'UNDO' });
+    expect(undone.present.shape.cells.size).toBe(0);
+  });
+
+  it('PAINT_CELL で消すとそのセルのヒントも消える', () => {
+    const s = run(toggle(0, 0), setClue(0, 0, 1), paint(0, 0, false, 'start'));
+    expect(s.present.shape.cells.size).toBe(0);
+    expect(s.present.clues.size).toBe(0);
+  });
+
+  it('既に同じ状態のセルへの PAINT_CELL は無視される', () => {
+    const s = run(paint(0, 0, true, 'start'), paint(0, 0, true, 'continue'));
+    expect(s.past).toHaveLength(1);
+    expect(s.present.shape.cells.size).toBe(1);
+  });
+
+  it('FILL_ENCLOSED で外枠に囲まれた内側を一括で塗りつぶす', () => {
+    // 3×3 の外周リング（中央 (1,1) だけ空き）
+    const ring: HistoryAction[] = (
+      [[0, 0], [1, 0], [2, 0], [0, 1], [2, 1], [0, 2], [1, 2], [2, 2]] as const
+    ).map(([x, y]) => toggle(x, y));
+    const before = run(...ring);
+    expect(enclosedCells(before.present.shape)).toEqual(new Set(['1,1']));
+    const s = historyReducer(before, { type: 'FILL_ENCLOSED' });
+    expect(s.present.shape.cells.has('1,1')).toBe(true);
+    expect(s.present.shape.cells.size).toBe(9);
+    // 1つのundo単位
+    const undone = historyReducer(s, { type: 'UNDO' });
+    expect(undone.present.shape.cells.size).toBe(8);
+  });
+
+  it('囲まれた領域がなければ FILL_ENCLOSED は無視される', () => {
+    const s = run(toggle(0, 0), { type: 'FILL_ENCLOSED' });
+    expect(s.past).toHaveLength(1);
+    expect(s.present.shape.cells.size).toBe(1);
   });
 });
 
