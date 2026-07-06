@@ -156,6 +156,7 @@ type AppState = {
   clues: Clues;
   solution: Solution | null;
   solverStatus: 'idle' | 'solved' | 'no_solution' | 'multiple_solutions';
+  firstConflict?: CellPos; // 直近の SOLVE で矛盾を検出したヒント位置（表示用）
 };
 // 備考: ソルバーは同期実行のため 'solving' 状態は持たない（将来非同期化する場合に追加）。
 // 「矛盾」は「解なし」の一形態として no_solution に統一し、firstConflict の有無で区別する。
@@ -304,6 +305,7 @@ proverbs-solver/
     ├── propagation.test.ts        # 制約伝播
     ├── backtrack.test.ts          # バックトラッキング
     ├── textArt.test.ts            # テキストアート変換
+    ├── state.test.ts              # reducer / 履歴管理
     └── fixtures/                  # テスト専用の追加ケース（解なし・複数解）
 ```
 
