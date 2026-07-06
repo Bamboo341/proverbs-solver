@@ -2,6 +2,7 @@
 // 解くボタンでソルバーを呼び、結果をグリッド＋テキストアートで表示する。
 // 無効ヒントがある場合やセルが無い場合はボタンを無効化する（docs/Spec.md 4.4）
 import { posKey } from '../utils/coords.ts';
+import { downloadSolutionPng } from '../utils/imageExport.ts';
 import { solutionToTextArt } from '../utils/textArt.ts';
 import GridView from './GridView.tsx';
 import TextArtView from './TextArtView.tsx';
@@ -99,6 +100,21 @@ export default function SolutionViewer({
           />
         </div>
       </div>
+
+      {/* PNG出力（docs/Spec.md 8章）。解答があるときのみ有効 */}
+      <button
+        type="button"
+        disabled={!solution}
+        onClick={() =>
+          solution &&
+          downloadSolutionPng(shape, clues, solution, {
+            title: `Proverbs ピースソルバー ${new Date().toLocaleString('ja-JP')}`,
+          })
+        }
+        className="rounded border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
+      >
+        PNG出力
+      </button>
     </div>
   );
 }
