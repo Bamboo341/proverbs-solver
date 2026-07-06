@@ -15,10 +15,10 @@ function App() {
   const invalidClues = invalidClueKeys(state.shape, state.clues);
   const canSolve = state.shape.cells.size > 0 && invalidClues.size === 0;
 
-  // Ctrl+Enter で解く（docs/Spec.md 4.4）
+  // Ctrl+Enter で解く（docs/Spec.md 4.4。Macキーバインドは対応不要: 同13章）
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && canSolve) {
+      if (e.ctrlKey && e.key === 'Enter' && canSolve) {
         e.preventDefault();
         dispatch({ type: 'SOLVE' });
       }

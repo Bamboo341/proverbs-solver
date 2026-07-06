@@ -18,8 +18,6 @@ type SolutionViewerProps = {
   onSolve: () => void;
 };
 
-// 解けなかった場合、テキストアートは未確定（？）で描画されるため、solution が
-// あるときのみ表示する
 function statusMessage(status: SolverStatus, firstConflict?: CellPos) {
   switch (status) {
     case 'solved':

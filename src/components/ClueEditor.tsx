@@ -2,6 +2,7 @@
 // セルをクリックで選択 → 数字キーで入力、Delete/右クリックで削除。
 // 近傍セル数を超える値は入力時に拒否して警告を表示する
 import { useEffect, useState } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { invalidClueKeys, neighborCount } from '../state/reducer.ts';
 import { posKey } from '../utils/coords.ts';
 import GridView from './GridView.tsx';
@@ -33,7 +34,7 @@ export default function ClueEditor({ shape, clues, onSetClue, onRemoveClue }: Cl
     setWarning(null);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: ReactKeyboardEvent) => {
     if (!selected) return;
     if (e.key >= '0' && e.key <= '9') {
       e.preventDefault();

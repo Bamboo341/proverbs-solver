@@ -69,8 +69,10 @@ export default function GridView({
         content = clue;
         if (clickable) className += ' hover:bg-blue-50';
       }
+      // 選択中と無効が同時に成立するセルでは選択（青）を優先する
+      // （両方のringクラスを付けると勝敗がCSS出力順に依存するため）
       if (isSelected) className += ' z-10 ring-2 ring-inset ring-blue-500';
-      if (isInvalid) className += ' z-10 ring-2 ring-inset ring-red-500';
+      else if (isInvalid) className += ' z-10 ring-2 ring-inset ring-red-500';
 
       if (clickable) {
         cells.push(
