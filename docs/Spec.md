@@ -20,7 +20,7 @@ Steam版パズルゲーム「Proverbs」の1ピース単位のマインスイー
 | 言語 | TypeScript |
 | フレームワーク | React |
 | ビルドツール | Vite |
-| スタイリング | Tailwind CSS（推奨） |
+| スタイリング | Tailwind CSS v4（`@tailwindcss/vite` プラグイン。設定ファイル不要） |
 | 状態管理 | React標準（useState/useReducer）+ Context（必要に応じて） |
 | テスト | Vitest（ソルバーロジックのユニットテスト用） |
 | パッケージマネージャ | npm |
@@ -260,9 +260,8 @@ type Action =
 ```
 proverbs-solver/
 ├── package.json
-├── vite.config.ts
+├── vite.config.ts                 # Vite設定（@tailwindcss/vite・Vitest設定を含む）
 ├── tsconfig.json
-├── tailwind.config.js
 ├── index.html
 ├── src/
 │   ├── main.tsx
