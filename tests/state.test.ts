@@ -86,7 +86,7 @@ describe('reducer: ヒント編集', () => {
     // 2セルでヒント2を置き、隣を無効化 → 近傍1 < 値2 で無効ヒントになる
     const s = run(toggle(0, 0), toggle(1, 0), setClue(0, 0, 2), toggle(1, 0));
     expect(s.present.clues.get('0,0')).toBe(2);
-    expect(invalidClueKeys(s.present)).toEqual(new Set(['0,0']));
+    expect(invalidClueKeys(s.present.shape, s.present.clues)).toEqual(new Set(['0,0']));
   });
 
   it('neighborCount は 3×3∩ピース内のセル数を返す', () => {

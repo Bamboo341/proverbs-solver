@@ -2,6 +2,7 @@
 // Step 1〜3 の入力UIは Phase 4〜6 で実装する。
 // 状態は reducer + 履歴スタックで管理し、undo/redo のUI接続は Phase 7 で行う
 import { useReducer } from 'react';
+import ClueEditor from './components/ClueEditor.tsx';
 import GridView from './components/GridView.tsx';
 import Header from './components/Header.tsx';
 import ShapeEditor from './components/ShapeEditor.tsx';
@@ -29,10 +30,12 @@ function App() {
 
         <section className="rounded-lg border border-gray-200 bg-white p-5">
           <h2 className="mb-3 text-lg font-bold">Step 2: 数値ヒント入力</h2>
-          <p className="mb-3 text-sm text-gray-400">
-            セルをクリックして数字キーで入力（Phase 5 で実装）
-          </p>
-          <GridView shape={state.shape} clues={state.clues} />
+          <ClueEditor
+            shape={state.shape}
+            clues={state.clues}
+            onSetClue={(pos, value) => dispatch({ type: 'SET_CLUE', pos, value })}
+            onRemoveClue={(pos) => dispatch({ type: 'REMOVE_CLUE', pos })}
+          />
         </section>
 
         <section className="rounded-lg border border-gray-200 bg-white p-5">

@@ -35,10 +35,10 @@ export function neighborCount(shape: PieceShape, pos: CellPos): number {
 
 // 値が近傍セル数を超えている無効ヒントの一覧。
 // 入力時には拒否されるが、形状編集で後から生じ得る（docs/Spec.md 4.2, 4.4）
-export function invalidClueKeys(state: AppState): Set<string> {
+export function invalidClueKeys(shape: PieceShape, clues: Clues): Set<string> {
   const invalid = new Set<string>();
-  for (const [key, value] of state.clues) {
-    if (value > neighborCount(state.shape, keyToPos(key))) invalid.add(key);
+  for (const [key, value] of clues) {
+    if (value > neighborCount(shape, keyToPos(key))) invalid.add(key);
   }
   return invalid;
 }
