@@ -1,11 +1,13 @@
 // Step 3: 解答表示（docs/Spec.md 4.1, 4.4, 3.1）
-// 解くボタンでソルバーを呼び、結果をグリッド＋テキストアートで表示する。
+// 解くボタンでソルバーを呼び、結果を2色塗り分けのグリッド＋テキストアートで表示する。
 // 無効ヒントがある場合やセルが無い場合はボタンを無効化する（docs/Spec.md 4.4）
+import { useState } from 'react';
 import { posKey } from '../utils/coords.ts';
 import { downloadSolutionPng } from '../utils/imageExport.ts';
 import { solutionToTextArt } from '../utils/textArt.ts';
 import GridView from './GridView.tsx';
 import TextArtView from './TextArtView.tsx';
+import ZoomControl from './ZoomControl.tsx';
 import type { CellPos, Clues, PieceShape, Solution } from '../solver/types.ts';
 import type { SolverStatus } from '../state/types.ts';
 
@@ -55,6 +57,7 @@ export default function SolutionViewer({
   invalidClues,
   onSolve,
 }: SolutionViewerProps) {
+  const [cellSize, setCellSize] = useState(28);
   const noCells = shape.cells.size === 0;
   const hasInvalid = invalidClues.size > 0;
   const canSolve = !noCells && !hasInvalid;
@@ -90,8 +93,30 @@ export default function SolutionViewer({
         </div>
       )}
 
+      {/* 凡例（docs/Spec.md 4.2: 2色塗り分け） */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-gray-900" /> 塗る
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="inline-block h-3.5 w-3.5 rounded-sm border border-amber-300 bg-amber-100" />{' '}
+          塗らない
+        </span>
+        <span>セル内の数字 = ヒント（背景色が塗り状態を表します）</span>
+      </div>
+      <ZoomControl value={cellSize} onChange={setCellSize} />
+
       <div className="flex flex-wrap items-start gap-6">
-        <GridView shape={shape} clues={clues} solution={solution} invalidClues={highlight} />
+        <div className="min-w-0 max-w-full overflow-auto pb-1">
+          <GridView
+            shape={shape}
+            clues={clues}
+            solution={solution}
+            cellSize={cellSize}
+            outline
+            invalidClues={highlight}
+          />
+        </div>
         <div>
           <div className="mb-1 text-xs text-gray-500">テキストアート</div>
           <TextArtView

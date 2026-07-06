@@ -33,9 +33,10 @@ describe('parseShapeText', () => {
     expect(() => parseShapeText('...')).toThrow('有効セル');
   });
 
-  it('20×20 を超えるとエラー', () => {
-    expect(() => parseShapeText('#'.repeat(21))).toThrow('最大 20×20');
-    expect(() => parseShapeText(Array(21).fill('#').join('\n'))).toThrow('最大 20×20');
+  it('80×80 を超えるとエラー', () => {
+    expect(() => parseShapeText('#'.repeat(81))).toThrow('最大 80×80');
+    expect(() => parseShapeText(Array(81).fill('#').join('\n'))).toThrow('最大 80×80');
+    expect(parseShapeText('#'.repeat(80)).width).toBe(80);
   });
 });
 

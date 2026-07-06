@@ -3,7 +3,7 @@ import { xyKey } from './coords.ts';
 import type { CellState, Clues, PieceShape, Solution } from '../solver/types.ts';
 
 // グリッドの上限サイズ（docs/Spec.md 4.4）
-export const MAX_SIZE = 20;
+export const MAX_SIZE = 80;
 
 // 形状テキスト（'#'=有効セル、'.' または半角スペース=ピース外）→ PieceShape
 // 末尾の空行のみ無視する。不正な入力は Error を投げる
