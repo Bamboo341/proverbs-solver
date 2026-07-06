@@ -286,17 +286,25 @@ proverbs-solver/
 │   ├── utils/
 │   │   ├── textArt.ts             # テキストアート↔内部形式変換
 │   │   ├── coords.ts              # "x,y" ↔ {x,y} 変換ヘルパ
+│   │   ├── problem.ts             # サンプル問題JSON → 内部形式変換
 │   │   └── imageExport.ts         # PNG出力
 │   ├── presets/                   # サンプル問題（UIプリセット兼テストフィクスチャ）
 │   │   ├── index.ts               # プリセット一覧の定義
-│   │   ├── simple.json
-│   │   └── complex.json
+│   │   ├── simple.json            # 確定ルールで解ける
+│   │   ├── propagation.json       # 制約伝播（サブセットルール）が必要
+│   │   └── backtrack.json         # バックトラッキングが必要
 │   └── styles/
 │       └── index.css
+├── scripts/
+│   └── cli.ts                     # ソルバーのCLI実行（npm run cli -- <problem.json>）
 └── tests/
-    ├── solver.test.ts             # ソルバーのユニットテスト（src/presets のJSONも利用）
-    ├── rules.test.ts
-    └── fixtures/                  # テスト専用の追加ケース（解なし・複数解など）
+    ├── helpers.ts                 # テスト共通ヘルパ
+    ├── solver.test.ts             # 統合ソルバー（プリセット/フィクスチャ検証・差分テスト）
+    ├── rules.test.ts              # 確定ルール
+    ├── propagation.test.ts        # 制約伝播
+    ├── backtrack.test.ts          # バックトラッキング
+    ├── textArt.test.ts            # テキストアート変換
+    └── fixtures/                  # テスト専用の追加ケース（解なし・複数解）
 ```
 
 ## 10. テスト

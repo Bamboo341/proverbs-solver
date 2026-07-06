@@ -1,0 +1,11 @@
+{
+  "id": "no-solution-immediate",
+  "name": "解なし（伝播で即矛盾）",
+  "description": "ヒント(0,0)=2 が両隣接セルの塗りを強制し、ヒント(1,0)=0 と即座に矛盾する。firstConflict は (1,0)。",
+  "shape": ["###"],
+  "clues": { "0,0": 2, "1,0": 0 },
+  "expected": {
+    "status": "no_solution",
+    "firstConflict": "1,0"
+  }
+}

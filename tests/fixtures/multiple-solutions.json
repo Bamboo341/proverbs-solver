@@ -1,0 +1,11 @@
+{
+  "id": "multiple-solutions",
+  "name": "複数解（1×2）",
+  "description": "どちらか一方を塗る2通りの解がある。最初に見つかる解は探索決定性（docs/Spec.md 6.5）により左のセルを塗った解になる。",
+  "shape": ["##"],
+  "clues": { "0,0": 1 },
+  "expected": {
+    "status": "multiple_solutions",
+    "solution": ["#x"]
+  }
+}
