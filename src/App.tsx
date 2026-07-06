@@ -1,11 +1,11 @@
-// 1画面完結のレイアウト骨組み（docs/Spec.md 4.1）
-// 状態は reducer + 履歴スタックで管理する。undo/redo のUI接続は Phase 7 で行う
+// 1画面完結のレイアウト（docs/Spec.md 4.1）
+// 状態は reducer + 履歴スタックで管理する
 import { useEffect, useReducer } from 'react';
 import ClueEditor from './components/ClueEditor.tsx';
 import Header from './components/Header.tsx';
 import ShapeEditor from './components/ShapeEditor.tsx';
 import SolutionViewer from './components/SolutionViewer.tsx';
-import { createInitialHistory, historyReducer } from './state/history.ts';
+import { canRedo, canUndo, createInitialHistory, historyReducer } from './state/history.ts';
 import { invalidClueKeys } from './state/reducer.ts';
 
 function App() {
@@ -15,12 +15,29 @@ function App() {
   const invalidClues = invalidClueKeys(state.shape, state.clues);
   const canSolve = state.shape.cells.size > 0 && invalidClues.size === 0;
 
-  // Ctrl+Enter で解く（docs/Spec.md 4.4。Macキーバインドは対応不要: 同13章）
+  // キーボードショートカット（docs/Spec.md 4.4。Macキーバインドは対応不要: 同13章）
+  // - Ctrl+Enter: 解く
+  // - Ctrl+Z / Ctrl+Y: Undo / Redo
+  //   （テキスト入力中はブラウザ標準のテキストundoを優先してスキップ）
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'Enter' && canSolve) {
+      if (!e.ctrlKey) return;
+      if (e.key === 'Enter') {
+        if (canSolve) {
+          e.preventDefault();
+          dispatch({ type: 'SOLVE' });
+        }
+        return;
+      }
+      const inTextField =
+        e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+      if (inTextField) return;
+      if (e.key.toLowerCase() === 'z' && !e.shiftKey) {
         e.preventDefault();
-        dispatch({ type: 'SOLVE' });
+        dispatch({ type: 'UNDO' });
+      } else if (e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        dispatch({ type: 'REDO' });
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -29,7 +46,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
-      <Header onReset={() => dispatch({ type: 'RESET' })} />
+      <Header
+        canUndo={canUndo(history)}
+        canRedo={canRedo(history)}
+        onUndo={() => dispatch({ type: 'UNDO' })}
+        onRedo={() => dispatch({ type: 'REDO' })}
+        onReset={() => dispatch({ type: 'RESET' })}
+      />
       <main className="mx-auto max-w-5xl space-y-6 p-6">
         <section className="rounded-lg border border-gray-200 bg-white p-5">
           <h2 className="mb-3 text-lg font-bold">Step 1: ピース形状入力</h2>
