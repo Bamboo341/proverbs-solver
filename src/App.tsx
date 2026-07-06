@@ -52,6 +52,7 @@ function App() {
         onUndo={() => dispatch({ type: 'UNDO' })}
         onRedo={() => dispatch({ type: 'REDO' })}
         onReset={() => dispatch({ type: 'RESET' })}
+        onLoadPreset={(presetId) => dispatch({ type: 'LOAD_PRESET', presetId })}
       />
       <main className="mx-auto max-w-5xl space-y-6 p-6">
         <section className="rounded-lg border border-gray-200 bg-white p-5">

@@ -1,11 +1,13 @@
-// ヘッダー: タイトル + Undo/Redo/Reset（docs/Spec.md 4.1）
-// Undo/Redo ボタンの接続は Phase 7 で行う（ハンドラ未指定の間は無効表示）
+// ヘッダー: タイトル + サンプル読込 + Undo/Redo/Reset（docs/Spec.md 4.1）
+import { presets } from '../presets/index.ts';
+
 type HeaderProps = {
   canUndo?: boolean;
   canRedo?: boolean;
   onUndo?: () => void;
   onRedo?: () => void;
   onReset: () => void;
+  onLoadPreset?: (presetId: string) => void;
 };
 
 const BUTTON_CLASS =
@@ -17,12 +19,36 @@ export default function Header({
   onUndo,
   onRedo,
   onReset,
+  onLoadPreset,
 }: HeaderProps) {
   return (
-    <header className="border-b border-gray-200 bg-white px-6 py-3">
-      <div className="mx-auto flex max-w-5xl items-center justify-between">
-        <h1 className="text-xl font-bold">Proverbs ピースソルバー</h1>
-        <div className="flex gap-2">
+    <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3 shadow-sm">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold">Proverbs ピースソルバー</h1>
+          <p className="text-xs text-gray-500">
+            形状とヒントを入力して「解く」でパズルの解を計算します
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {onLoadPreset && (
+            // 値を常に "" に保つことで、同じプリセットを続けて選び直せる
+            <select
+              value=""
+              onChange={(e) => e.target.value && onLoadPreset(e.target.value)}
+              aria-label="サンプル読込"
+              className="rounded border border-gray-300 bg-white px-2 py-1 text-sm hover:bg-gray-100"
+            >
+              <option value="" disabled>
+                サンプル読込…
+              </option>
+              {presets.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             type="button"
             className={BUTTON_CLASS}
