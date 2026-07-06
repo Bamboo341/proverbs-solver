@@ -20,7 +20,7 @@ Steam版パズルゲーム「Proverbs」の1ピース単位のマインスイー
 | 言語 | TypeScript |
 | フレームワーク | React |
 | ビルドツール | Vite |
-| スタイリング | Tailwind CSS（推奨） |
+| スタイリング | Tailwind CSS v4（`@tailwindcss/vite` プラグイン。設定ファイル不要） |
 | 状態管理 | React標準（useState/useReducer）+ Context（必要に応じて） |
 | テスト | Vitest（ソルバーロジックのユニットテスト用） |
 | パッケージマネージャ | npm |
@@ -156,6 +156,7 @@ type AppState = {
   clues: Clues;
   solution: Solution | null;
   solverStatus: 'idle' | 'solved' | 'no_solution' | 'multiple_solutions';
+  firstConflict?: CellPos; // 直近の SOLVE で矛盾を検出したヒント位置（表示用）
 };
 // 備考: ソルバーは同期実行のため 'solving' 状態は持たない（将来非同期化する場合に追加）。
 // 「矛盾」は「解なし」の一形態として no_solution に統一し、firstConflict の有無で区別する。
@@ -260,9 +261,8 @@ type Action =
 ```
 proverbs-solver/
 ├── package.json
-├── vite.config.ts
+├── vite.config.ts                 # Vite設定（@tailwindcss/vite・Vitest設定を含む）
 ├── tsconfig.json
-├── tailwind.config.js
 ├── index.html
 ├── src/
 │   ├── main.tsx
@@ -287,17 +287,26 @@ proverbs-solver/
 │   ├── utils/
 │   │   ├── textArt.ts             # テキストアート↔内部形式変換
 │   │   ├── coords.ts              # "x,y" ↔ {x,y} 変換ヘルパ
+│   │   ├── problem.ts             # サンプル問題JSON → 内部形式変換
 │   │   └── imageExport.ts         # PNG出力
 │   ├── presets/                   # サンプル問題（UIプリセット兼テストフィクスチャ）
 │   │   ├── index.ts               # プリセット一覧の定義
-│   │   ├── simple.json
-│   │   └── complex.json
+│   │   ├── simple.json            # 確定ルールで解ける
+│   │   ├── propagation.json       # 制約伝播（サブセットルール）が必要
+│   │   └── backtrack.json         # バックトラッキングが必要
 │   └── styles/
 │       └── index.css
+├── scripts/
+│   └── cli.ts                     # ソルバーのCLI実行（npm run cli -- <problem.json>）
 └── tests/
-    ├── solver.test.ts             # ソルバーのユニットテスト（src/presets のJSONも利用）
-    ├── rules.test.ts
-    └── fixtures/                  # テスト専用の追加ケース（解なし・複数解など）
+    ├── helpers.ts                 # テスト共通ヘルパ
+    ├── solver.test.ts             # 統合ソルバー（プリセット/フィクスチャ検証・差分テスト）
+    ├── rules.test.ts              # 確定ルール
+    ├── propagation.test.ts        # 制約伝播
+    ├── backtrack.test.ts          # バックトラッキング
+    ├── textArt.test.ts            # テキストアート変換
+    ├── state.test.ts              # reducer / 履歴管理
+    └── fixtures/                  # テスト専用の追加ケース（解なし・複数解）
 ```
 
 ## 10. テスト
@@ -374,20 +383,20 @@ Claude Code に依頼する際は、以下の順序で段階的に実装する�
 
 以下がすべて満たされていれば完成とする：
 
-- [ ] `npm install && npm run dev` で起動できる
-- [ ] `npm test` でソルバーのユニットテストが全て通る
-- [ ] テキストアートでピース形状を入力できる
-- [ ] グリッドクリックでピース形状を入力できる
-- [ ] グリッドクリック+数字キーで数値ヒントを入力できる
-- [ ] 「解く」ボタンで解答が表示される
-- [ ] 解答がグリッドとテキストアート両方で表示される
-- [ ] 解けないケース（解なし/複数解）で適切なメッセージが出る
-- [ ] 近傍セル数を超えるヒント値が入力時に拒否され、警告が表示される
-- [ ] 形状編集で無効になったヒントが自動削除され、解答が自動クリアされる
-- [ ] Ctrl+Z / Ctrl+Y で undo/redo できる
-- [ ] Undo/Redoボタンで undo/redo できる
-- [ ] 解答をPNGでダウンロードできる
-- [ ] サンプル問題を最低3つロードできる
+- [x] `npm install && npm run dev` で起動できる
+- [x] `npm test` でソルバーのユニットテストが全て通る
+- [x] テキストアートでピース形状を入力できる
+- [x] グリッドクリックでピース形状を入力できる
+- [x] グリッドクリック+数字キーで数値ヒントを入力できる
+- [x] 「解く」ボタンで解答が表示される
+- [x] 解答がグリッドとテキストアート両方で表示される
+- [x] 解けないケース（解なし/複数解）で適切なメッセージが出る
+- [x] 近傍セル数を超えるヒント値が入力時に拒否され、警告が表示される
+- [x] 形状編集で無効になったヒントが自動削除され、解答が自動クリアされる
+- [x] Ctrl+Z / Ctrl+Y で undo/redo できる
+- [x] Undo/Redoボタンで undo/redo できる
+- [x] 解答をPNGでダウンロードできる
+- [x] サンプル問題を最低3つロードできる
 
 ## 13. 非機能要件・注意事項
 

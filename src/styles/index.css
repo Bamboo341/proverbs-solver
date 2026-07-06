@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* テキストアート表示用の日本語等幅フォント。
+   全角1文字幅で桁が揃うことを前提とする（docs/Spec.md 4.3） */
+.textart {
+  font-family: 'BIZ UDGothic', 'MS Gothic', 'Noto Sans Mono CJK JP', 'Osaka-Mono', monospace;
+  line-height: 1.3;
+}

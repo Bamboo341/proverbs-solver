@@ -1,0 +1,10 @@
+{
+  "id": "no-solution-search",
+  "name": "解なし（探索の結果）",
+  "description": "同じ4セルに対して合計2と合計3を要求しており解が存在しないが、伝播では矛盾を検出できず、探索を尽くして判明する。firstConflict は付かない。",
+  "shape": ["##", "##"],
+  "clues": { "0,0": 2, "1,1": 3 },
+  "expected": {
+    "status": "no_solution"
+  }
+}
